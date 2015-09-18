@@ -1507,7 +1507,9 @@ CAmount GetBanknodePayment(int nHeight, int64_t blockValue)
 		ret= blockValue/5000;
 	}
 	else if (nHeight >210000){ret= blockValue/3;}
-	else {if(nHeight >201000 && nHeight%900==0) {ret/= 1000;}
+	
+	else {
+	if(nHeight >201000 && nHeight%900==0) {ret/= 1000;}
 			else {ret+= (blockValue/5);}
 		
 	if(nHeight >200000 && nHeight%900==0) ret+= (blockValue/5);
@@ -1519,7 +1521,9 @@ CAmount GetBanknodePayment(int nHeight, int64_t blockValue)
 
 CAmount GetGrantValue(int nHeight, CAmount nFees)
 {
-    int64_t grantaward= GetBlockValue(chainActive.Tip()->nHeight, nFees)* (0.05);
+    int64_t grantaward= GetBlockValue(chainActive.Tip()->nHeight, nFees)* (0.025);
+    if(nHeight%900==0)
+		grantaward= 0.45 *COIN;
     return grantaward;
 }
 
@@ -2117,102 +2121,66 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 			return state.DoS(100, error("ConnectBlock() : no banknode payment ( required=%d)", mnsubsidy));	
 	}	
 
-	if (pindex->nHeight>210000){
-	//FUNCTION - ConnectBlock
-	//SECTION - Bitcredit Grant Block Information
-	//
-	
-	{
-	
-		LOCK( grantdb );
-		
+	if (pindex->nHeight>210000){	
+		LOCK(grantdb);		
 		int64_t grantAward = 0;
-		
-		//SECTION: Bitcredit Grant Awards Info
-		//
-		if( isGrantAwardBlock( pindex->nHeight ) )
-		{
-			//NOTE: getGrantAwards is returning false. 
-			//NOTE: This could mean the grant DB does not have enough information from previous blocks to process the current blocks.
-			//FIXME: Make sure grant awards are loaded.
-			//if( !getGrantAwards( pindex->nHeight) || !getGrantAwardsFromDatabaseForBlock( pindex->nHeight ) ){
+		if( isGrantAwardBlock( pindex->nHeight ) ){
+			//NOTE: getGrantAwards is returning false, this could mean the grant DB does not have enough information from previous blocks to process the current blocks.
+			//FIXME: Make sure grant awards are loaded.			
 			if( !getGrantAwards( pindex->nHeight) ){
-				return state.DoS(100, error("ConnectBlock() : grant awards error"));
+				return state.DoS(100, error("ConnectBlock() : grant awards error ( block=%d)",pindex->nHeight));
 			}
-			//NOTE: Ensure fees are going to award winners.
-			//
-			//TODO: Remove Debug Info
-			LogPrintf("Check Grant Awards rewarded for Block %d\n",pindex->nHeight);
-			
+			LogPrintf("Check Grant Awards rewarded for Block %d\n",pindex->nHeight);			
 			unsigned int awardFound = 0;
-			
-			//NOTE:Loop through grantaward array and set them again for more checks...
-			for( gait = grantAwards.begin();gait != grantAwards.end();++gait){
+
+			for(gait = grantAwards.begin();gait != grantAwards.end();++gait){
 				grantAward = grantAward + gait->second;
 			}
-			
+						
 			if (grantAward == 0 ){
-				//NOTE: the awards were not found.
 				LogPrintf("ERROR! No Awards found.\n");
-				return state.DoS(100, error("ConnectBlock() : grant awards error"));
+				return state.DoS(100, error("ConnectBlock() : grant awards error( grantAward=%d)",grantAward));
 			}
-			//NOTE: ...again
-			for( gait = grantAwards.begin();gait != grantAwards.end();++gait)
-			{
+			
+			for( gait = grantAwards.begin();gait != grantAwards.end();++gait){
 				//NOTE: Check that these addresses certainly received the exact amount at the exact destination.
-				//NOTE: Scan through all the addresses with a TX destination
-				for ( unsigned int j = 0; j < block.vtx[0].vout.size(); j++)
-				{
+				for ( unsigned int j = 0; j < block.vtx[0].vout.size(); j++){
 					CTxDestination address;	
-					//NOTE: Find the receiving address.
-					ExtractDestination( block.vtx[ 0 ].vout[ j ].scriptPubKey, address );
-					//NOTE: Convert address to a string in order to compare it.
-										
+					ExtractDestination(block.vtx[0].vout[j].scriptPubKey, address );										
 					string receiveAddressString = CBitcreditAddress(address).ToString();
 					string receiveAddress = receiveAddressString.c_str();
-					
-					//NOTE: Convert the amount to an int64 value.
-					CAmount theAmount = block.vtx[ 0 ].vout[ j ].nValue;
-					
-					LogPrintf("-----\n");
-					LogPrintf("log","Compare received amount: %ld, %ld\n",theAmount,gait->second);
+
+					CAmount theAmount = block.vtx[0].vout[j].nValue;
+					if(fDebug)LogPrintf("Compare received amount: %ld, %ld\n",theAmount,gait->second);
 					if( (CAmount) theAmount == (int64_t) gait->second ) {
 						LogPrintf("Yes: %ld equals %ld\n",theAmount,gait->second);
 					}
 					
-					LogPrintf("Compare receiving address: %s, %s, (%d)\n", receiveAddress.c_str(), gait->first.c_str(), receiveAddressString.compare( (gait->first).c_str() ));
+					if(fDebug)LogPrintf("Compare receiving address: %s, %s, (%d)\n", receiveAddress.c_str(), gait->first.c_str(), receiveAddressString.compare( (gait->first).c_str() ));
 					
 					if ( receiveAddressString.compare( (gait->first).c_str() ) == 0 ){
-						LogPrintf("Yes: %s equals %s\n",receiveAddress.c_str(),gait->first.c_str());
+						if(fDebug)LogPrintf("Yes: %s equals %s\n",receiveAddress.c_str(),gait->first.c_str());
 					}
-					
-					LogPrintf("-----\n");
 				
-					if( theAmount == gait->second && receiveAddress == gait->first )
-					{
+					if( theAmount == gait->second && receiveAddress == gait->first ){
 						awardFound++;
-						LogPrintf("Match! Current Award Size = %d\n",awardFound);
-						
+						if(fDebug)LogPrintf("Match! Current Award Size = %d\n",awardFound);						
 						break;
 					}
 				}
 			}
 		
-			LogPrintf( "Grant award in block awardFound = %d, grantAwards.size() = %lu\n", awardFound, grantAwards.size() );
+			if(fDebug)LogPrintf( "Grant award in block awardFound = %d, grantAwards.size() = %lu\n", awardFound, grantAwards.size());
 			
-			for( gait = grantAwards.begin();gait != grantAwards.end();++gait)
-			{
-				LogPrintf("Grant award in block %s, %ld\n",gait->first.c_str(),gait->second);
+			for( gait = grantAwards.begin();gait != grantAwards.end();++gait){
+				if(fDebug)LogPrintf("Grant award in block %s, %ld\n",gait->first.c_str(),gait->second);
 			} 
 			
 			//NOTE: This is an error in the Grant DB.
-			if ( awardFound != grantAwards.size() )
-			{
+			if (awardFound != grantAwards.size()){
 				return state.DoS(100, error("ConnectBlock() : Bitcredit DB Corruption detected. Grant Awards not being paid or paying too much. \n Please restore a previous version of grantdb.dat and/or delete the old grantdb database."));
 			}
 		}
-				
-			}
 	}
 
 
@@ -3033,7 +3001,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
             }
         }
     } else {
-        LogPrintf("CheckBlock() : skipping transaction locking checks\n");
+       if(fDebug) LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     }
 
 
@@ -3090,19 +3058,19 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                         LogPrintf("CheckBlock() : Couldn't find banknode payment(%d|%d) or payee(%d|%s) nHeight %d. \n", foundPaymentAmount, banknodePaymentAmount, foundPayee, address2.ToString().c_str(), chainActive.Tip()->nHeight+1);
                         return state.DoS(100, error("CheckBlock() : Couldn't find banknode payment or payee"));
                     } else {
-                        LogPrintf("CheckBlock() : Found banknode payment %d\n", chainActive.Tip()->nHeight+1);
+                        if(fDebug)LogPrintf("CheckBlock() : Found banknode payment %d\n", chainActive.Tip()->nHeight+1);
                     }
                 } else {
-                    LogPrintf("CheckBlock() : Is initial download, skipping banknode payment check %d\n", chainActive.Tip()->nHeight+1);
+                    if(fDebug)LogPrintf("CheckBlock() : Is initial download, skipping banknode payment check %d\n", chainActive.Tip()->nHeight+1);
                 }
             } else {
-                LogPrintf("CheckBlock() : Skipping banknode payment check - nHeight %d Hash %s\n", chainActive.Tip()->nHeight+1, block.GetHash().ToString().c_str());
+               if(fDebug) LogPrintf("CheckBlock() : Skipping banknode payment check - nHeight %d Hash %s\n", chainActive.Tip()->nHeight+1, block.GetHash().ToString().c_str());
             }
         } else {
-            LogPrintf("CheckBlock() : pindex is null, skipping banknode payment check\n");
+            if(fDebug)LogPrintf("CheckBlock() : pindex is null, skipping banknode payment check\n");
         }
     } else {
-        LogPrintf("CheckBlock() : skipping banknode payment checks\n");
+       if(fDebug) LogPrintf("CheckBlock() : skipping banknode payment checks\n");
     }
 
     // Check transactions
@@ -4095,7 +4063,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
 
-        if ((!pfrom->fForeignNode) && (pfrom->nVersion < MIN_PEER_PROTO_VERSION && chainActive.Tip()->nHeight> 203000))        
+        if ((!pfrom->fForeignNode) && (pfrom->nVersion < MIN_PEER_PROTO_VERSION && chainActive.Tip()->nHeight> 210000))        
         {
             // disconnect from peers older than this proto version
             LogPrintf("peer=%d using obsolete version %i; disconnecting\n", pfrom->id, pfrom->nVersion);
