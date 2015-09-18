@@ -667,7 +667,8 @@ void AllocateFileRange(FILE *file, unsigned int offset, unsigned int length) {
 #elif defined(__linux__)
     // Version using posix_fallocate
     off_t nEndPos = (off_t)offset + length;
-    posix_fallocate(fileno(file), 0, nEndPos);
+    //posix_fallocate(fileno(file), 0, nEndPos);
+    ftruncate(fileno(file), nEndPos);
 #else
     // Fallback version
     // TODO: just write one byte per block

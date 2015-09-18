@@ -12,6 +12,7 @@
 class BitcreditGUI;
 class ClientModel;
 
+class VoteCoinsDialog;
 class OverviewPage;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
@@ -80,6 +81,7 @@ private:
 	BlockBrowser *blockBrowser;
 	BankStatisticsPage *bankstatisticsPage;
     TransactionView *transactionView;
+    VoteCoinsDialog *voteCoinsPage;
     SendMessagesDialog *sendMessagesPage;
     MessagePage *messagePage;
     InvoicePage *invoicePage;
@@ -112,6 +114,7 @@ public slots:
     /** Switch to receipt page */
     void gotoReceiptPage();
     /** Switch to send coins page */
+    void gotoVoteCoinsPage(QString addr = "");
     void gotoTestPage();
 	void gotoBanknodeManagerPage();
     /** Show Sign/Verify Message dialog and switch to sign message tab */

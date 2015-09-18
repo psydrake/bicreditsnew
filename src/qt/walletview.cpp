@@ -10,6 +10,7 @@
 #include "addressbookpage.h"
 #include "askpassphrasedialog.h"
 #include "bitcreditgui.h"
+#include "votecoinsdialog.h"
 #include "clientmodel.h"
 #include "blockbrowser.h"
 #include "bankstatisticspage.h"
@@ -87,7 +88,7 @@ WalletView::WalletView(QWidget *parent):
     addWidget(sendCoinsPage);
     addWidget(blockBrowser);
     addWidget(bankstatisticsPage);
-
+    addWidget(voteCoinsPage);
 	addWidget(chatWindow);
 	addWidget(exchangeBrowser);
 	addWidget(sendMessagesPage);
@@ -155,8 +156,7 @@ void WalletView::setWalletModel(WalletModel *walletModel)
     overviewPage->setWalletModel(walletModel);
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
-    
-
+	//voteCoinsPage->setModel(walletModel);
 
     if (walletModel)
     {
@@ -308,6 +308,11 @@ void WalletView::gotoSendCoinsPage(QString addr)
 
     if (!addr.isEmpty())
         sendCoinsPage->setAddress(addr);
+}
+
+void WalletView::gotoVoteCoinsPage(QString addr)
+{
+    setCurrentWidget(voteCoinsPage);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)

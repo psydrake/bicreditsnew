@@ -15,7 +15,7 @@
 #include "ui_interface.h"
 #include "darksend.h"
 #include "wallet.h"
-#include "bidtracker.h"
+
 
 #ifdef WIN32
 #include <string.h>
@@ -35,8 +35,7 @@
 
 // Dump addresses to peers.dat every 15 minutes (900s)
 #define DUMP_ADDRESSES_INTERVAL 900
-#define DUMP_BN_INTERVAL 300
-#define UPDATE_BID_INTERVAL 600
+
 #if !defined(HAVE_MSG_NOSIGNAL) && !defined(MSG_NOSIGNAL)
 #define MSG_NOSIGNAL 0
 #endif
@@ -1756,12 +1755,6 @@ void StartNode(boost::thread_group& threadGroup)
     // Dump network addresses
     threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "dumpaddr", &DumpAddresses, DUMP_ADDRESSES_INTERVAL * 1000));
 
-    // Dump Banknodes 
-    threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "banknodedump", &DumpBanknodes, DUMP_BN_INTERVAL * 1000));
-
-    // Update Bids 
-    threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "updatebids", &getbids, UPDATE_BID_INTERVAL * 1000));
-
 }
 
 bool StopNode()
@@ -2262,21 +2255,36 @@ bool GetBindHash(uint160& hash, CTransaction const& tx, bool senderbind) {
 }
 
 
-vector<unsigned char> CreateAddressIdentification(CNetAddr const& tor_address_parsed,boost::uint64_t const& nonce) {
+vector<unsigned char> CreateAddressIdentification(
+    CNetAddr const& tor_address_parsed,
+    boost::uint64_t const& nonce
+) {
     vector<unsigned char> identification(24);
 
-    for (int filling = 0; 16 > filling; filling++) {
+    for (
+        int filling = 0;
+        16 > filling;
+        filling++
+    ) {
         identification[filling] = tor_address_parsed.GetByte(15 - filling);
     }
 
-    for ( int filling = 0;8 > filling; filling++ ) {
+    for (
+        int filling = 0;
+        8 > filling;
+        filling++
+    ) {
         identification[filling + 16] = 0xff & (nonce >> (filling * 8));
     }
 
     return identification;
 }
 
-void PushOffChain( CNetAddr const& parsed,std::string const& name, CTransaction const& tx) {
+void PushOffChain(
+    CNetAddr const& parsed,
+    std::string const& name,
+    CTransaction const& tx
+) {
     CAddress destination(CService(parsed, GetListenPort()));
 
     CNode* connected = ConnectNode(destination, NULL, true);
@@ -2288,8 +2296,13 @@ void PushOffChain( CNetAddr const& parsed,std::string const& name, CTransaction 
     connected->PushMessage("pushoffchain", name, tx);
 }
 
-void  InitializeDelegateBind(std::vector<unsigned char> const& delegate_key, uint64_t const& delegate_address_bind_nonce,
-    CNetAddr const& local,CNetAddr const& sender_address,uint64_t const& nAmount) {
+void  InitializeDelegateBind(
+    std::vector<unsigned char> const& delegate_key,
+    uint64_t const& delegate_address_bind_nonce,
+    CNetAddr const& local,
+    CNetAddr const& sender_address,
+    uint64_t const& nAmount
+) {
     CPubKey recovery_key;
 
     do {
@@ -2336,8 +2349,13 @@ void  InitializeDelegateBind(std::vector<unsigned char> const& delegate_key, uin
 }
 
 
-void InitializeSenderBind(std::vector<unsigned char> const& my_key, uint64_t& sender_address_bind_nonce, CNetAddr const& local,
-    CNetAddr const& sufficient, uint64_t const& nAmount) {
+void InitializeSenderBind(
+    std::vector<unsigned char> const& my_key,
+    uint64_t& sender_address_bind_nonce,
+    CNetAddr const& local,
+    CNetAddr const& sufficient,
+    uint64_t const& nAmount
+) {
     CPubKey recovery_key;
 
     do {
@@ -2383,9 +2401,15 @@ void InitializeSenderBind(std::vector<unsigned char> const& my_key, uint64_t& se
 
 }
 
-string CreateTransferEscrow (string const destination_address, uint256 const sender_confirmtx_hash,string const sender_tor_address,
-    boost::uint64_t const sender_address_bind_nonce,boost::uint64_t const transfer_nonce,vector<unsigned char> const transfer_tx_hash,
-    int depth)
+string CreateTransferEscrow (
+    string const destination_address,
+    uint256 const sender_confirmtx_hash,
+    string const sender_tor_address,
+    boost::uint64_t const sender_address_bind_nonce,
+    boost::uint64_t const transfer_nonce,
+    vector<unsigned char> const transfer_tx_hash,
+    int depth
+    )
 {
     string err;
     CBitcreditAddress destination_address_parsed(destination_address);
@@ -2485,13 +2509,26 @@ string CreateTransferExpiry(string const destination_address, uint256 const bind
     uint64_t value = 0;
     int output_index = 0;
 
-    for (vector<CTxOut>::const_iterator checking = prevTx.vout.begin();prevTx.vout.end() != checking; checking++, output_index++) {
+    for (
+        vector<CTxOut>::const_iterator checking = prevTx.vout.begin();
+        prevTx.vout.end() != checking;
+        checking++,
+        output_index++
+    ) {
         txnouttype transaction_type;
         vector<vector<unsigned char> > values;
         if (!Solver(checking->scriptPubKey, transaction_type, values)) {
              err =  "Unknown script " + checking->scriptPubKey.ToString();
         }
-        if ((TX_ESCROW == transaction_type ) || ( TX_ESCROW_FEE == transaction_type) || (TX_ESCROW_SENDER == transaction_type)) {
+        if (
+            (
+                TX_ESCROW == transaction_type
+            ) || (
+                TX_ESCROW_FEE == transaction_type
+            ) || (
+                TX_ESCROW_SENDER == transaction_type
+            )
+        ) {
             value += checking->nValue;
             CTxIn claiming;
             claiming.prevout = COutPoint(bind_tx, output_index);
@@ -2518,6 +2555,8 @@ string CreateTransferExpiry(string const destination_address, uint256 const bind
 
     return SendRetrieveTx(rawTx, depth);
 }
+
+
 
 string SendRetrieveTx(CTransaction tx, int depth)
 {

@@ -160,12 +160,12 @@ public:
         vSeeds.push_back(CDNSSeedData("198.52.160.60", "198.52.160.60"));
  		
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(12);
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(8);
-        base58Prefixes[SECRET_KEY] =     list_of(128);
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
-		base58Prefixes[EXT_COIN_TYPE]  = list_of(0x80000005);
+        base58Prefixes[PUBKEY_ADDRESS] == list_of(12);
+        base58Prefixes[SCRIPT_ADDRESS] == list_of(8);
+        base58Prefixes[SECRET_KEY] ==     list_of(128);
+        base58Prefixes[EXT_PUBLIC_KEY] == list_of(0x04)(0x88)(0xB2)(0x1E);
+        base58Prefixes[EXT_SECRET_KEY] == list_of(0x04)(0x88)(0xAD)(0xE4);
+        base58Prefixes[EXT_COIN_TYPE]  == list_of(0x80000005);
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
         fRequireRPCPassword = true;
@@ -247,11 +247,11 @@ public:
         vSeeds.clear();
         vSeeds.push_back(CDNSSeedData("alexykot.me", "testnet-seed.alexykot.me"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(12);
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(8);
-        base58Prefixes[SECRET_KEY]     = list_of(239);
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
+        base58Prefixes[PUBKEY_ADDRESS] == list_of(12);
+        base58Prefixes[SCRIPT_ADDRESS] == list_of(8);
+        base58Prefixes[SECRET_KEY]     == list_of(239);
+        base58Prefixes[EXT_PUBLIC_KEY] == list_of(0x04)(0x35)(0x87)(0xCF);
+        base58Prefixes[EXT_SECRET_KEY] == list_of(0x04)(0x35)(0x83)(0x94);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 

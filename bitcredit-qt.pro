@@ -1,9 +1,9 @@
 TEMPLATE = app
 TARGET = bitcredit-qt
-VERSION = 0.30.16.7
+VERSION = 0.30.17.1
 INCLUDEPATH += src src/json src/qt src/qt/forms src/compat src/crypto src/lz4 src/primitives src/script src/secp256k1/include src/univalue src/xxhash
-DEFINES += ENABLE_WALLET
-DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
+DEFINES += ENABLE_WALLET HAVE_WORKING_BOOST_SLEEP
+DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE CURL_STATICLIB
 CONFIG += no_include_pwd
 CONFIG += thread static
 QT += core gui network printsupport widgets
@@ -13,42 +13,33 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 }
 
-# Use command line:
-#   qmake xxx.pro RELEASE=1 USE_UPNP=1 -config release QMAKE_LFLAGS+="-static-libgcc -static-libstdc++" BOOST_INCLUDE_PATH=C:/MinGW/msys/1.0/local/include BOOST_LIB_PATH=C:/MinGW/msys/1.0/local/lib BOOST_LIB_SUFFIX=-mgw46-mt-s-1_54
-#   make -f Makefile.Release
-#
-
-BOOST_INCLUDE_PATH= /home/x-102/deps/Boost/boost_1_53_0/include
-BOOST_LIB_PATH= /home/x-102/deps/Boost/boost_1_53_0/armeabi/lib
+BOOST_INCLUDE_PATH= /home/minato/deps/Boost/boost/include
+BOOST_LIB_PATH= /home/minato/deps/Boost/boost/armeabi-v7a/lib
 BOOST_LIB_SUFFIX=-gcc-mt-1_53
-PROTOBUF_INCLUDE_PATH=/home/x-102/deps/protobuf-2.5.0/src
-PROTOBUF_LIB_PATH=/home/x-102/deps/protobuf-2.5.0/src/.libs
-OPENSSL_INCLUDE_PATH=/home/x-102/deps/openssl/openssl-1.0.2/include
-OPENSSL_LIB_PATH=/home/x-102/deps/openssl/openssl-1.0.2/armeabi-v7a/lib
-LIBS += -lprotobuf -lcurl -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_LIB_SUFFIX
-CURL_INCLUDE_PATH=/home/x-102/deps/curl/include
-CURL_LIB_PATH=/home/x-102/deps/curl/lib/.libs
-BDB_INCLUDE_PATH=/home/x-102/deps/db-6.1.26.NC/build_unix
-BDB_LIB_PATH=/home/x-102/deps/db-6.1.26.NC/build_unix
-MINIUPNPC_LIB_PATH=/home/x-102/deps/miniupnpc
-MINIUPNPC_INCLUDE_PATH=/home/x-102/deps/
-
-#LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.12
-#LIBPNG_LIB_PATH=C:/deps/libpng-1.6.12/.libs
-
-QRENCODE_INCLUDE_PATH=/home/x-102/deps/qrencode-3.4.4
-QRENCODE_LIB_PATH=/home/x-102/deps/qrencode-3.4.4/.libs
-
+PROTOBUF_INCLUDE_PATH=/home/minato/deps/protobuf/src
+PROTOBUF_LIB_PATH=/home/minato/deps/protobuf/src/.libs
+OPENSSL_INCLUDE_PATH=/home/minato/deps/openssl/openssl-1.0.2/include
+OPENSSL_LIB_PATH=/home/minato/deps/openssl/openssl-1.0.2/armeabi-v7a/lib
+CURL_INCLUDE_PATH=/home/minato/deps/curl/include
+CURL_LIB_PATH=/home/minato/deps/curl/lib/.libs
+BDB_INCLUDE_PATH=/home/minato/deps/db-4.8.30.NC/build_unix
+BDB_LIB_PATH=/home/minato/deps/db-4.8.30.NC/build_unix
+MINIUPNPC_LIB_PATH=/home/minato/deps/miniupnpc
+MINIUPNPC_INCLUDE_PATH=/home/minato/deps/
+LIBPNG_INCLUDE_PATH=/home/minato/deps/libpng
+LIBPNG_LIB_PATH=/home/minato/deps/libpng/.libs
+QRENCODE_INCLUDE_PATH=/home/minato/deps/qrencode
+QRENCODE_LIB_PATH=/home/minato/deps/qrencode/.libs
 SECP256K1_INCLUDE_PATH = src/secp256k1/include
-SECP256K1_LIB_PATH = src/secp256k1/local/.libs
-
-
+SECP256K1_LIB_PATH = src/secp256k1/.libs
+INCLUDEPATH += src/leveldb/include src/leveldb/helpers/memenv
+LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a $$PWD/src/secp256k1/.libs/libsecp256k1.a
 
 OBJECTS_DIR = build
 MOC_DIR = build
 UI_DIR = build
 
-#USE_UPNP=-
+USE_UPNP=-
 USE_QRCODE=1
 
 # use: qmake "RELEASE=1"
@@ -64,8 +55,8 @@ contains(RELEASE, 1) {
 
 !win32 {
 # for extra security against potential buffer overflows: enable GCCs Stack Smashing Protection
-QMAKE_CXXFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
-QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
+QMAKE_CXXFLAGS *= -fstack-protector-all --param ssp-buffer-size=1 -fpermissive
+QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1 -fpermissive
 # We need to exclude this for Windows cross compile with MinGW 4.2.x, as it will result in a non-working executable!
 # This can be enabled for Windows, when we switch to MinGW >= 4.4.x.
 }
@@ -91,38 +82,14 @@ contains(USE_UPNP, -) {
     message(Building without UPNP support)
 } else {
     message(Building with UPNP support)
-    count(USE_UPNP, 0) {
-        USE_UPNP=1
+    count(USE_UPNP, -) {
+        USE_UPNP=-
     }
     DEFINES += USE_UPNP=$$USE_UPNP MINIUPNP_STATICLIB
     INCLUDEPATH += $$MINIUPNPC_INCLUDE_PATH
     LIBS += $$join(MINIUPNPC_LIB_PATH,,-L,) -lminiupnpc
     win32:LIBS += -liphlpapi
 }
-
-# use: qmake "USE_DBUS=1" or qmake "USE_DBUS=0"
-#linux:count(USE_DBUS, 0) {
-#    USE_DBUS=1
-#}
-#contains(USE_DBUS, 1) {
-#    message(Building with DBUS (Freedesktop notifications) support)
-#    DEFINES += USE_DBUS
-#    QT += dbus
-#}
-
-{
-PROTOBUF_LIB_PATH=C:/deps/protobuf-2.5.0/src/.libs
-	INCLUDEPATH += $$PROTOBUF_INCLUDE_PATH
-    LIBS += $$join(PROTOBUF_INCLUDE_PATH,,-L,) -lprotobuf
-}
-SECP256K1_LIB_PATH = src/secp256k1/.libs
-SECP256K1_INCLUDE_PATH= src/secp256k1/include
-INCLUDEPATH += $$SECP256K1_LIB_PATH
-LIBS += -lsecp256k1
-
-
-include(protobuf.pri)
-PROTOS += src/qt/paymentrequest.proto \
 
 # use: qmake "USE_IPV6=1" ( enabled by default; default)
 #  or: qmake "USE_IPV6=0" (disabled by default)
@@ -137,6 +104,9 @@ contains(USE_IPV6, -) {
     DEFINES += USE_IPV6=$$USE_IPV6
 }
 
+include (protobuf.pri)
+PROTOS += src/qt/paymentrequest.proto \
+
 contains(BITCOIN_NEED_QT_PLUGINS, 1) {
     DEFINES += BITCOIN_NEED_QT_PLUGINS
     QTPLUGIN += qcncodecs qjpcodecs qtwcodecs qkrcodecs qtaccessiblewidgets
@@ -145,26 +115,8 @@ contains(BITCOIN_NEED_QT_PLUGINS, 1) {
 # LIBSEC256K1 SUPPORT
 QMAKE_CXXFLAGS *= -DUSE_SECP256K1
 
-
 INCLUDEPATH += src/leveldb/include src/leveldb/helpers/memenv
 LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
-!win32 {
-        # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
-        genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
-} else {
-        # make an educated guess about what the ranlib command is called
-        isEmpty(QMAKE_RANLIB) {
-                QMAKE_RANLIB = $$replace(QMAKE_STRIP, strip, ranlib)
-        }
-        LIBS += -lshlwapi
-       # genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX TARGET_OS=OS_WINDOWS_CROSSCOMPILE $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a && $$QMAKE_RANLIB $$PWD/src/leveldb/libleveldb.a && $$QMAKE_RANLIB $$PWD/src/leveldb/libmemenv.a
-}
-genleveldb.target = src/leveldb/libleveldb.a
-genleveldb.depends = FORCE
-PRE_TARGETDEPS += src/leveldb/libleveldb.a
-QMAKE_EXTRA_TARGETS += genleveldb
-# Gross ugly hack that depends on qmake internals, unfortunately there is no other way to do it.
-QMAKE_CLEAN += src/leveldb/libleveldb.a; cd $$PWD/src/leveldb ; $(MAKE) clean
 
 # regenerate src/build.h
 !windows|contains(USE_BUILD_INFO, 1) {
@@ -191,7 +143,7 @@ contains(USE_O3, 1) {
     QMAKE_CFLAGS += -msse2
 }
 
-QMAKE_CXXFLAGS_WARN_ON = -fdiagnostics-show-option -Wall -Wextra -Wno-ignored-qualifiers -Wformat -Wformat-security -Wno-unused-parameter -Wstack-protector
+QMAKE_CXXFLAGS_WARN_ON = -fdiagnostics-show-option -Wall -Wextra -Wno-ignored-qualifiers -Wformat -Wformat-security -Wno-unused-parameter -Wstack-protector -Wno-unused-local-typedefs
 
 
 # Input
@@ -610,7 +562,7 @@ OTHER_FILES += \
 # platform specific defaults, if not overridden on command line
 isEmpty(BOOST_LIB_SUFFIX) {
     macx:BOOST_LIB_SUFFIX = -mt
-    windows:BOOST_LIB_SUFFIX = -mgw49-mt-s-1_54
+    windows:BOOST_LIB_SUFFIX = -mgw49-mt-s-1_55
 }
 
 isEmpty(BOOST_THREAD_LIB_SUFFIX) {
@@ -663,12 +615,11 @@ macx:QMAKE_CXXFLAGS_THREAD += -pthread
 macx:QMAKE_INFO_PLIST = share/qt/Info.plist
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
-INCLUDEPATH += $$SECP256K1_INCLUDE_PATH $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$QRENCODE_INCLUDE_PATH $$CURL_INCLUDE_PATH
-LIBS += $$join(SECP256K1_LIB_PATH,,-L,) $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,) $$join(CURL_LIB_PATH,,-L,)
-LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX
+INCLUDEPATH += $$LIBPNG_INCLUDE_PATH $$PROTOBUF_INCLUDE_PATH $$SECP256K1_INCLUDE_PATH $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$QRENCODE_INCLUDE_PATH $$CURL_INCLUDE_PATH
+LIBS += $$join(LIBPNG_LIB_PATH,,-L,) $$join(PROTOBUF_LIB_PATH,,-L,) $$join(SECP256K1_LIB_PATH,,-L,) $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,) $$join(CURL_LIB_PATH,,-L,)
+LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX -lprotobuf -lcurl
 # -lgdi32 has to happen after -lcrypto (see  #681)
 windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32 -lpthread -static
-LIBS += -lsecp256k1
 LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX -lboost_regex$$BOOST_LIB_SUFFIX
 windows:LIBS += -lboost_chrono$$BOOST_LIB_SUFFIX
 
@@ -679,9 +630,4 @@ contains(RELEASE, 1) {
     }
 }
 
-!windows:!macx {
-    DEFINES += LINUX
-    LIBS += -lrt -ldl
-}
-#QMAKE_EXTRA_COMPILERS += protobuf_cc
 system($$QMAKE_LRELEASE -silent $$_PRO_FILE_)

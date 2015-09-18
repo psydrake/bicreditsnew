@@ -15,7 +15,6 @@ namespace Ui {
 }
 class WalletModel;
 class VoteCoinsEntry;
-//class VoteCoinsRecipient;
 
 QT_BEGIN_NAMESPACE
 class QUrl;

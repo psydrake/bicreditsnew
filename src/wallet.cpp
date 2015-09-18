@@ -3381,7 +3381,7 @@ static bool ProcessOffChain(CWallet* wallet, std::string const& name, CTransacti
 
             wallet->store_address_bind(sender_address, sender_address_bind_nonce);
 
-            if (fDebug) printf("Address bind: address %s nonce %"PRIu64"\n", sender_address.ToString().c_str(),sender_address_bind_nonce);
+            if (fDebug) printf("Address bind: address %s nonce %llx \n", sender_address.ToString().c_str(),sender_address_bind_nonce);
 
             confirm_transfer.scriptPubKey = CScript() << data << sender_address_bind_nonce;
 
@@ -3535,7 +3535,7 @@ static bool ProcessOffChain(CWallet* wallet, std::string const& name, CTransacti
             }
             memcpy(&delegate_address_bind_nonce, data.data(), sizeof(delegate_address_bind_nonce));
 
-            if (fDebug) printf("Delegate read delegate bind nonce : %"PRIu64"\n",delegate_address_bind_nonce);
+            if (fDebug) printf("Delegate read delegate bind nonce : %llx \n",delegate_address_bind_nonce);
 
             //DELRET 1
             InitializeDelegateBind(
@@ -3678,12 +3678,12 @@ static bool ProcessOffChain(CWallet* wallet, std::string const& name, CTransacti
         }
         wallet->add_to_retrieval_string_in_nonce_map(nonce, funded_txid,false);
         if (fDebug) {
-            printf("Added to sender retrieval string at nonce %"PRIu64" funded tx id %s \n",
+            printf("Added to sender retrieval string at nonce %llx funded tx id %s \n",
                    nonce,  funded_txid.c_str());
         }
         std::string retrieve;
         if (!wallet->read_retrieval_string_from_nonce_map(nonce, retrieve, false)) {
-           printf("Could not get retrieve string for nonce %"PRIu64" while processing confirm-sender-bind\n",
+           printf("Could not get retrieve string for nonce %llx while processing confirm-sender-bind\n",
            nonce);
         } else {
            if (wallet->StoreRetrieveStringToDB(funded_tx.GetHash(), retrieve, false)) {
@@ -4098,7 +4098,7 @@ static bool ProcessOffChain(CWallet* wallet, std::string const& name, CTransacti
 
         uint256 hash;
         if (!wallet->get_hash_from_expiry_nonce_map(nonce, hash)) {
-             printf("Could not get tx hash for nonce %"PRIu64" while processing committed-transfer", nonce);
+             printf("Could not get tx hash for nonce %llx while processing committed-transfer", nonce);
              return true;
         }
 
@@ -5171,7 +5171,7 @@ CTransaction CreateSenderBind(CNetAddr const& local_tor_address_parsed, boost::u
     vector<unsigned char> identification = CreateAddressIdentification( local_tor_address_parsed, received_delegate_nonce );
 
     if (fDebug)
-        printf("CreateSenderBind : \n recover address : %s expiry: %"PRIu64" tor address: %s nonce: %"PRIu64"\n",
+        printf("CreateSenderBind : \n recover address : %s expiry: %llx tor address: %s nonce: %llx \n",
                recover_address_parsed.ToString().c_str(), expiry, local_tor_address_parsed.ToStringIP().c_str(), received_delegate_nonce);
 
     CMutableTransaction rawTx;
