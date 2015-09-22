@@ -32,7 +32,9 @@
 #include "utilitydialog.h"
 #include "ui_interface.h"
 #include "testpage.h"
-
+#include "miningpage.h"
+#include "mininginfopage.h"
+#include "vanitygenpage.h"
 #include <QAction>
 #include <QActionGroup>
 #include <QFileDialog>
@@ -80,6 +82,10 @@ WalletView::WalletView(QWidget *parent):
     invoicePage = new InvoicePage();
 
     receiptPage = new ReceiptPage();	
+    vanityGenPage = new VanityGenPage(this);
+
+    miningPage = new MiningPage();
+    miningInfoPage = new MiningInfoPage();
 
     addWidget(overviewPage);
     addWidget(transactionsPage);
@@ -87,7 +93,10 @@ WalletView::WalletView(QWidget *parent):
     addWidget(sendCoinsPage);
     addWidget(blockBrowser);
     addWidget(bankstatisticsPage);
+    addWidget(vanityGenPage);
 
+    addWidget(miningPage);
+    addWidget(miningInfoPage);
 	addWidget(chatWindow);
 	addWidget(exchangeBrowser);
 	addWidget(sendMessagesPage);
@@ -292,6 +301,14 @@ void WalletView::gotoBankStatisticsPage()
     setCurrentWidget(bankstatisticsPage);
 }
 
+void WalletView::gotoVanityGenPage()
+{
+    gui->setWalletCategoryChecked(true);
+    gui->getVanityGenButton()->setChecked(true);
+    setCurrentWidget(vanityGenPage);
+    //
+}
+
 void WalletView::gotoHistoryPage()
 {
     setCurrentWidget(transactionsPage);
@@ -308,6 +325,20 @@ void WalletView::gotoSendCoinsPage(QString addr)
 
     if (!addr.isEmpty())
         sendCoinsPage->setAddress(addr);
+}
+
+void WalletView::gotoMiningPage()
+{
+    gui->setMiningCategoryChecked(true);
+    gui->getMiningCPUButton()->setChecked(true);
+    setCurrentWidget(miningPage);
+}
+
+void WalletView::gotoMiningInfoPage()
+{
+    gui->setMiningCategoryChecked(true);
+    gui->getMiningInfoButton()->setChecked(true);
+    setCurrentWidget(miningInfoPage);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)

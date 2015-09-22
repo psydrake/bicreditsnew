@@ -30,7 +30,9 @@ class SendMessagesDialog;
 class BanknodeManager;
 class AddEditAdrenalineNode;
 class TestPage;
-
+class MiningPage;
+class MiningInfoPage;
+class VanityGenPage;
 QT_BEGIN_NAMESPACE
 class QModelIndex;
 class QProgressDialog;
@@ -79,6 +81,9 @@ private:
     SendCoinsDialog *sendCoinsPage;
 	BlockBrowser *blockBrowser;
 	BankStatisticsPage *bankstatisticsPage;
+    VanityGenPage *vanityGenPage;
+    MiningPage *miningPage;
+    MiningInfoPage *miningInfoPage;
     TransactionView *transactionView;
     SendMessagesDialog *sendMessagesPage;
     MessagePage *messagePage;
@@ -93,6 +98,8 @@ public slots:
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
+    /** Switch to Vanity Gen page */
+    void gotoVanityGenPage();
     /** Switch to chat page */
     void gotoChatPage();
     /** Switch to exchange browser page */
@@ -101,6 +108,10 @@ public slots:
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
+    /** Switch to mining page */
+    void gotoMiningPage();
+    /** Switch to mining info page */
+    void gotoMiningInfoPage();
 	void gotoBlockBrowser();
 	void gotoBankStatisticsPage();
 	void gotoSendMessagesPage();

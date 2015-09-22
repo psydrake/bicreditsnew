@@ -38,7 +38,9 @@ class UnitDisplayStatusBarControl;
 class WalletFrame;
 class WalletModel;
 class TestPage;
-
+class BlockExplorer;
+class MiningInfoPage;
+class MiningPage;
 class CWallet;
 
 QT_BEGIN_NAMESPACE
@@ -139,6 +141,10 @@ private:
     QAction *actionSendReceiveinv;
     QAction *actionSendReceivestats;
     QAction *testAction;
+    QAction *openBlockExplorerAction;
+    QToolButton *vanityGenButton;
+    QAction *miningInfoAction;
+    QAction *miningAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -234,12 +240,14 @@ private slots:
     void gotoBanknodeManagerPage();
     void gotoTestPage();
     /** Switch to vote page */
- 
+    /** Switch to Vanity Gen page */
+    void gotoVanityGenPage(); 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
-
+    /** Switch to mining page */
+    void gotoMiningPage();
     /** Show open dialog */
     void openClicked();
 #endif // ENABLE_WALLET

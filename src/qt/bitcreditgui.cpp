@@ -25,7 +25,7 @@
 #include "walletmodel.h"
 #include "stdio.h"
 #include "testpage.h"
-
+#include "blockexplorer.h"
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -541,6 +541,26 @@ void BitcreditGUI::createActions(const NetworkStyle *networkStyle)
     banknodeManagerAction->setCheckable(true);
     tabGroup->addAction(banknodeManagerAction);
 
+    vanityGenButton = new QToolButton(walletButtonContainer);
+    vanityGenButton->setStatusTip(tr("Create your own vanity addresses"));
+    vanityGenButton->setToolTip(vanityGenButton->statusTip());
+    sizePolicyWallet.setHorizontalStretch(0);
+    sizePolicyWallet.setHeightForWidth(vanityGenButton->sizePolicy().hasHeightForWidth());
+    vanityGenButton->setSizePolicy(sizePolicyWallet);
+    vanityGenButton->setAutoExclusive(true);
+    vanityGenButton->setCheckable(true);
+
+    miningCategory = new QToolButton(categoryContainer);
+    miningCategory->setFixedSize(84,70);
+    miningCategory->move(0,5+70+2+70+2);
+    miningCategory->setText("Mining");
+    miningCategory->setStatusTip("Everything mining related");
+    miningCategory->setToolTip(miningCategory->statusTip());
+    //miningCategory->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
+    miningCategory->setAutoExclusive(true);
+    miningCategory->setCheckable(true);
+    connect(miningCategory, SIGNAL(clicked()), this, SLOT(gotoMiningInfoPage()));
+
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
@@ -577,9 +597,11 @@ void BitcreditGUI::createActions(const NetworkStyle *networkStyle)
     connect(banknodeManagerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(banknodeManagerAction, SIGNAL(triggered()), this, SLOT(gotoBanknodeManagerPage()));
     connect(testAction, SIGNAL(triggered()), this, SLOT(gotoTestPage()));
-    
+    connect(vanityGenButton, SIGNAL(clicked()), this, SLOT(showNormalIfMinimized()));
+    connect(vanityGenButton, SIGNAL(clicked()), this, SLOT(gotoVanityGenPage()));    
     //connect(toolbar2, SIGNAL(onHover()), this, SLOT(tb2hover()));
-
+    connect(miningInfoButton, SIGNAL(clicked()), this, SLOT(gotoMiningInfoPage()));
+    connect(miningCPUButton, SIGNAL(clicked()), this, SLOT(gotoMiningPage()));
 	
 #endif // ENABLE_WALLET
 
@@ -657,6 +679,9 @@ void BitcreditGUI::createActions(const NetworkStyle *networkStyle)
 
     openAction = new QAction(QIcon(":/icons/open"), tr("Open &URI..."), this);
     openAction->setStatusTip(tr("Open a bitcredit: URI or payment request"));
+
+    openBlockExplorerAction = new QAction(QIcon(":/icons/explorer"), tr("Blockchain Explorer"), this);
+    openBlockExplorerAction->setStatusTip(tr("Open blockchain explorer"));
 
     showHelpMessageAction = new QAction(QIcon(":/icons/info"), tr("&Command-line options"), this);
     showHelpMessageAction->setStatusTip(tr("Show the Bitcredit Core help message to get a list with possible Bitcredit command-line options"));
@@ -747,15 +772,16 @@ void BitcreditGUI::createToolBars()
         spacer5->setFixedHeight(15);
         toolbar->addWidget(spacer5);
         spacer5->setObjectName("spacer5");
-	//toolbar->addAction(overviewAction);
-	toolbar->addAction(historyAction);
+		//toolbar->addAction(overviewAction);
+		toolbar->addAction(historyAction);
     	toolbar->addAction(actionSendReceive);
         toolbar->addAction(actionSendReceiveMess);
-   	toolbar->addAction(actionSendReceiveinv);
-	toolbar->addAction(actionSendReceivestats);		        		
-	toolbar->addAction(chatAction);
-	toolbar->addAction(banknodeManagerAction);
+	   	toolbar->addAction(actionSendReceiveinv);
+		toolbar->addAction(actionSendReceivestats);		        		
+		toolbar->addAction(chatAction);
+		toolbar->addAction(banknodeManagerAction);
         toolbar->addAction(testAction);
+    	tools->addAction(openBlockExplorerAction);
         historyAction->setChecked(true);
     }
     
