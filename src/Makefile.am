@@ -159,7 +159,11 @@ BITCREDIT_CORE_H = \
   rawdata.h \
   bankmath.h \
   ibtp.h \
-  voting.h
+  voting.h \
+  vanity_avl.h \
+  vanity_pattern.h \
+  vanity_util.h \
+  vanitygenwork.h 
 
 JSON_H = \
   json/json_spirit.h \
@@ -210,6 +214,10 @@ libbitcredit_server_a_SOURCES = \
   txdb.cpp \
   txmempool.cpp \
   xxhash/xxhash.c \
+  vanity_avl.cpp \
+  vanity_pattern.cpp \
+  vanity_util.cpp \
+  vanitygenwork.cpp \ 
   json/json_spirit_value.cpp \
   json/json_spirit_reader.cpp \
   json/json_spirit_writer.cpp \

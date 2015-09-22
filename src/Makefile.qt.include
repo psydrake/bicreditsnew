@@ -109,7 +109,11 @@ QT_FORMS_UI = \
   qt/forms/testpage.ui \
   qt/forms/banknodemanager.ui \
   qt/forms/votecoinsdialog.ui \
-  qt/forms/votecoinsentry.ui
+  qt/forms/votecoinsentry.ui \
+  qt/forms/blockexplorer.ui \
+  qt/forms/mininginfopage.ui \
+  qt/forms/miningpage.ui \
+  qt/forms/vanitygenpage.ui 
 
 QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
@@ -175,7 +179,11 @@ QT_MOC_CPP = \
   qt/moc_banknodemanager.cpp \
   qt/moc_adrenalinenodeconfigdialog.cpp \
   qt/moc_testpage.cpp \
-  qt/moc_addeditadrenalinenode.cpp
+  qt/moc_addeditadrenalinenode.cpp \
+  qt/moc_blockexplorer.cpp \
+  qt/moc_mininginfopage.cpp \
+  qt/moc_miningpage.cpp \
+  qt/moc_vanitygenpage.cpp 
 
 BITCREDIT_MM = \
   qt/macdockiconhandler.mm \
@@ -267,7 +275,11 @@ BITCREDIT_QT_H = \
   qt/banknodemanager.h \
   qt/adrenalinenodeconfigdialog.h \
   qt/testpage.h \
-  qt/addeditadrenalinenode.h
+  qt/addeditadrenalinenode.h \
+  qt/blockexplorer.h \
+  qt/mininginfopage.h \
+  qt/miningpage.h \
+  qt/vanitygenpage.h 
   
 RES_ICONS = \
   qt/res/icons/add.png \
@@ -363,7 +375,11 @@ BITCREDIT_QT_CPP = \
   qt/messagemodel.cpp \
   qt/banknodemanager.cpp \
   qt/adrenalinenodeconfigdialog.cpp \
-  qt/addeditadrenalinenode.cpp
+  qt/addeditadrenalinenode.cpp \
+  qt/blockexplorer.cpp \
+  qt/mininginfopage.cpp \
+  qt/miningpage.cpp \
+  qt/vanitygenpage.cpp 
 
 if ENABLE_WALLET
 BITCREDIT_QT_CPP += \
